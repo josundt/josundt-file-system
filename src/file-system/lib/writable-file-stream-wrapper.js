@@ -1,32 +1,14 @@
-const ws: typeof WritableStream = globalThis.WritableStream;
+const ws = globalThis.WritableStream;
 // || await import('https://cdn.jsdelivr.net/npm/web-streams-polyfill@3/dist/ponyfill.es2018.mjs').then(r => r.WritableStream).catch(() => import('web-streams-polyfill').then(r => r.WritableStream))
-
-
-interface SeekWriteArgument {
-    type: "seek";
-    position: number;
-}
-
-interface TruncateWriteArgument {
-    type: "truncate";
-    size: number;
-}
-
-type ExtendedWriteType<W> = W | SeekWriteArgument | TruncateWriteArgument;
-
-class FileSystemWritableFileStream<W = any> extends ws<ExtendedWriteType<W>> {
-    constructor(underlyingSink?: UnderlyingSink<ExtendedWriteType<W>>, strategy?: QueuingStrategy<ExtendedWriteType<W>>) {
+export class FileSystemWritableFileStreamWrapper extends ws {
+    constructor(underlyingSink, strategy) {
         super(underlyingSink, strategy);
-
+        this._closed = false;
         // Stupid Safari hack to extend native classes
         // https://bugs.webkit.org/show_bug.cgi?id=226201
-        Object.setPrototypeOf(this, FileSystemWritableFileStream.prototype);
-
+        Object.setPrototypeOf(this, FileSystemWritableFileStreamWrapper.prototype);
     }
-
-    private _closed: boolean = false;
-
-    override close(): Promise<void> {
+    close() {
         this._closed = true;
         const w = this.getWriter();
         const p = w.close();
@@ -34,42 +16,32 @@ class FileSystemWritableFileStream<W = any> extends ws<ExtendedWriteType<W>> {
         return p;
         // return super.close ? super.close() : this.getWriter().close()
     }
-
-    seek(position: number): Promise<void> {
+    seek(position) {
         return this.write({ type: "seek", position: position });
     }
-
-    truncate(size: number): Promise<void> {
+    truncate(size) {
         return this.write({ type: "truncate", size: size });
     }
-
-    write(chunk?: ExtendedWriteType<W>): Promise<void> {
+    write(chunk) {
         if (this._closed) {
             return Promise.reject(new TypeError("Cannot write to a CLOSED writable stream"));
         }
-
         const writer = this.getWriter();
         const p = writer.write(chunk);
         writer.releaseLock();
         return p;
     }
 }
-
-Object.defineProperty(FileSystemWritableFileStream.prototype, Symbol.toStringTag, {
+Object.defineProperty(FileSystemWritableFileStreamWrapper.prototype, Symbol.toStringTag, {
     value: "FileSystemWritableFileStream",
     writable: false,
     enumerable: false,
     configurable: true
 });
-
-Object.defineProperties(FileSystemWritableFileStream.prototype, {
+Object.defineProperties(FileSystemWritableFileStreamWrapper.prototype, {
     close: { enumerable: true },
     seek: { enumerable: true },
     truncate: { enumerable: true },
     write: { enumerable: true }
 });
-
-export default FileSystemWritableFileStream;
-
-export { FileSystemWritableFileStream };
-
+//# sourceMappingURL=writable-file-stream-wrapper.js.map

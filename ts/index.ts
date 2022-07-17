@@ -1,29 +1,26 @@
-import { showSaveFilePicker } from "./file-system/show-save-file-picker.js";
+import { setPonyFillDownloadCallback, WebStreamsTypeLib } from "./file-system/lib/web-streams-ponyfill-factory.js";
+import { saveAsAsync } from "./save-as-async.js";
 
-// const dirHandle = await getOriginPrivateDirectory(downloader);
-async function saveAsAsync(url: string): Promise<void> {
+// Required polyfills:
+// https://cdn.jsdelivr.net/npm/web-streams-polyfill@3/dist/ponyfill.es2018.mjs:
+//    - TransformStream (required for downloader/file-handle.js)
+//    - WritableStream (required for writable-file-stream-wrapper.js & download/file-handle.js)
 
-    /* eslint-disable @typescript-eslint/naming-convention */
-    const fileHandle = await showSaveFilePicker({
-        _preferPolyfill: false,
-        suggestedName: "Untitled.jpg",
-        accepts: [
-            { accept: { "image/png": [ "png" ] } },
-            { accept: { "image/jpg": [ "jpg" ] } },
-            { accept: { "image/webp": [ "webp" ] } }
-        ],
-        excludeAcceptAllOption: false // default
-    });
-    /* eslint-disable @typescript-eslint/naming-convention */
-
-    const response = await fetch(url);
-
-    const writableStream = await fileHandle.createWritable();
-    await response.body!.pipeTo(writableStream);
-}
-
-document.getElementById("download")!.addEventListener("click", () => {
+function onDownloadButtonCliced(): void {
     const url = "https://images.pexels.com/photos/220067/pexels-photo-220067.jpeg?cs=srgb&dl=pexels-pixabay-220067.jpg&fm=jpg";
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    saveAsAsync(url);
+    saveAsAsync(
+        url,
+        u => fetch(u, {
+            // Set authorization headers etc
+        })
+    );
+}
+
+setPonyFillDownloadCallback(() => {
+    // Need to move this to our own CDN for CSP policy
+    const url = "https://cdn.jsdelivr.net/npm/web-streams-polyfill@3/dist/ponyfill.es2018.mjs";
+    return import(/* webpackIgnore: true */ url) as Promise<WebStreamsTypeLib>;
 });
+
+document.getElementById("download")!.addEventListener("click", onDownloadButtonCliced);
