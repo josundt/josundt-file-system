@@ -1,0 +1,6 @@
+/.vs
+/node_modules
+/dist
+npm-debug.log*
+/test.coverage
+/test.results
