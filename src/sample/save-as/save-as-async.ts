@@ -1,6 +1,6 @@
+import { FileSystemFileHandleExt } from "../../file-system/abstractions.js";
+import { showSaveFilePicker, ShowSaveFilePickerTypes } from "../../file-system/show-save-file-picker.js";
 import { extensionsMimeMap } from "./extensions-mime-map.js";
-import { FileSystemFileHandleExt } from "./file-system/abstractions.js";
-import { showSaveFilePicker, ShowSaveFilePickerTypes } from "./file-system/show-save-file-picker.js";
 
 export async function saveAsAsync(
     url: string,
@@ -9,7 +9,6 @@ export async function saveAsAsync(
 ): Promise<void> {
 
     // If filename is not specified, try to get it from the
-    fileName ??= tryGetFileNameFromUrl(url);
     const extension = fileName?.split(".").pop();
     const mimeType = !extension ? undefined : extensionsMimeMap.get(extension.toLowerCase());
     const types: ShowSaveFilePickerTypes[] = !mimeType || !extension ? [] : [{
@@ -39,13 +38,4 @@ export async function saveAsAsync(
         await response.body!.pipeTo(writableStream);
     }
 
-}
-
-function tryGetFileNameFromUrl(url: string): string | undefined {
-    let result: string | undefined;
-    const lastSegment = new URL(url).pathname.split("/").pop();
-    if (lastSegment?.includes(".")) {
-        result = lastSegment;
-    }
-    return result;
 }

@@ -1,0 +1,67 @@
+body {
+    --border-radius: .35em;
+    --accent-color: rgb(17, 78, 118);
+    --border: 1px solid var(--accent-color);
+    background: #E5E5E5;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+h1, h2 {
+    margin: 0 0 .2em;
+    color: var(--accent-color);
+}
+form {
+    padding-top: 1em;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5em;
+}
+.form-group > label, legend {
+    display: block;
+    margin-bottom: .5em;
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: larger;
+}
+fieldset {
+    border: none;
+    padding-left: 0;
+}
+fieldset label {
+    display: block;
+    margin-bottom: 1em;
+}
+input[type='url'] {
+    font-family: inherit;
+    font-size: inherit;
+    padding: .5em .4em;
+    border: var(--border);
+    border-radius: var(--border-radius);
+}
+input[type='radio'] {
+    font-family: inherit;
+    font-size: inherit;
+    accent-color: var(--accent-color);
+    cursor: pointer;
+}
+button {
+    font-family: inherit;
+    padding: .5em 1em;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    background: var(--accent-color);
+    color: #FFF;
+    font-size: larger;
+    cursor: pointer;
+}
+a {
+    color: inherit;
+}
+.clickable {
+    cursor: pointer;
+}
+.small {
+    font-size: smaller;
+    font-style: italic;
+}

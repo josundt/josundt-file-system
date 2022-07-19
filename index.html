@@ -2,13 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/web-streams-polyfill@3/dist/ponyfill.es2018.mjs"></script>
+    <title>Download to FileSystem demo</title>
+    <link rel="stylesheet" href="./index.css"/>
 </head>
 <body>
-    <button id="download">Download</button>
+    <h1>Download to <a href="https://fs.spec.whatwg.org/" target="_blank">FileSystem</a> demo</h1>
+    <h2>-piping Response.body to a
+        <a href="https://fs.spec.whatwg.org/#api-filesystemwritablefilestream" target="_blank">FileSystemWritableFileStream</a>
+    </h2>
+    <form>
+        <div class="form-group">
+            <label for="url">URL</label>
+            <input type="url" name="url"/>
+        </div>
+        <div class="form-group">
+            <fieldset>
+                <legend>Download strategy</legend>
+                <label class="clickable">
+                    <input type="radio" name="downloadStrategy" value="download" checked="true"/>
+                    Download <span class="small">(using TransportStream to )</span>
+                </label>
+                <label class="clickable">
+                    <input type="radio" name="downloadStrategy" value="saveAs"/>
+                    Save as <span class="small">(with fallback to "Downlad" strategy when not supported by browser)</span>
+                </label>
+            </fieldset>
+        </div>
+        <button>Download!</button>
+    </form>
     <script src="./dist/main.js"></script>
 </body>
 </html>

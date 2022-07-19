@@ -21,7 +21,7 @@ export abstract class FileSystemFileHandleBase
 
     abstract getFile(): Promise<File>;
 
-    protected abstract createWritableInternal<W>(options?: FileSystemCreateWritableOptions): Promise<FileSystemWritableFileStream>;
+    protected abstract createWritableInternal<W>(options?: FileSystemCreateWritableOptions): Promise<WritableStreamDefaultWriter>;
 
 }
 

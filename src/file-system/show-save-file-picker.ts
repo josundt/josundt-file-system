@@ -22,10 +22,13 @@ export interface ShowSaveFilePickerOptions {
 
 export type ShowSaveFilePickerFn = (options?: ShowSaveFilePickerOptions) => Promise<FileSystemFileHandleExt>;
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-const native = (globalThis as any).showSaveFilePicker as ShowSaveFilePickerFn;
 
-const polyfill: ShowSaveFilePickerFn = async function (
+// If global showSaveFilePicker is supported, use FileHandle returned from dialog
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+const showSaveFilePickerFileHandle = (globalThis as any).showSaveFilePicker as ShowSaveFilePickerFn;
+
+// Fallback to use DownloadFileHandle
+const downloadFileHandle: ShowSaveFilePickerFn = async function (
     options: ShowSaveFilePickerOptions = {}
 ): Promise<FileSystemFileHandleExt> {
 
@@ -33,5 +36,5 @@ const polyfill: ShowSaveFilePickerFn = async function (
 
 };
 
-export const showSaveFilePicker = native ?? polyfill;
+export const showSaveFilePicker = showSaveFilePickerFileHandle ?? downloadFileHandle;
 

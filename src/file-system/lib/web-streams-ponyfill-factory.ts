@@ -14,7 +14,6 @@ export function setPonyFillDownloadCallback(fn: () => Promise<WebStreamsTypeLib>
     getPonyFillsAsync = fn;
 }
 
-
 export async function getWebStreamsTypeLibAsync(): Promise<WebStreamsTypeLib> {
 
     let result: WebStreamsTypeLib;

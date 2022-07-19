@@ -1,10 +1,9 @@
 {
     "extends": "@josundt/tsconfig-rules/tsconfig.base.web.nodenext.json",
     "compilerOptions": {
-      "skipLibCheck": true,
-      "outDir": "src"
+      "skipLibCheck": true
     },
     "include": [
-      "ts"
+      "./src"
     ]
 }

@@ -1,7 +1,6 @@
-import { FileSystemCreateWritableOptions, FileSystemFileHandleExt, FileSystemWritableFileStream } from "../abstractions.js";
+import { FileSystemCreateWritableOptions, FileSystemFileHandleExt } from "../abstractions.js";
 import { FileSystemFileHandleBase } from "../file-handle-base.js";
 import { getWebStreamsTypeLibAsync } from "../lib/web-streams-ponyfill-factory.js";
-import { FileSystemWritableFileStreamWrapper } from "../lib/writable-file-stream-wrapper.js";
 import { RemoteWritableStream } from "./remote-writable-stream.js";
 
 // @ts-expect-error accessing proprietary window properties
@@ -22,7 +21,7 @@ export class DownloadFileHandle
         );
     }
 
-    protected async createWritableInternal<W>(options?: FileSystemCreateWritableOptions): Promise<FileSystemWritableFileStream> {
+    protected async createWritableInternal<W>(options?: FileSystemCreateWritableOptions): Promise<WritableStreamDefaultWriter> {
         options ??= {};
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -102,7 +101,7 @@ export class DownloadFileHandle
             document.body.appendChild(iframe);
         }
 
-        return new FileSystemWritableFileStreamWrapper(sink.getWriter());
+        return sink.getWriter();
     }
 }
 
