@@ -9,16 +9,18 @@ export interface WebStreamsTypeLib {
 let imported: WebStreamsTypeLib | undefined;
 
 let getPonyFillsAsync: (() => Promise<WebStreamsTypeLib>) | undefined;
+let forcePonyFill: boolean = false;
 
-export function setPonyFillDownloadCallback(fn: () => Promise<WebStreamsTypeLib>): void {
+export function setPonyFillDownloadCallback(fn: () => Promise<WebStreamsTypeLib>, preferPonyFill: boolean = false): void {
     getPonyFillsAsync = fn;
+    forcePonyFill = preferPonyFill;
 }
 
 export async function getWebStreamsTypeLibAsync(): Promise<WebStreamsTypeLib> {
 
     let result: WebStreamsTypeLib;
 
-    if ("WritableStream" in globalThis && "TransformStream" in globalThis) {
+    if (!forcePonyFill && "WritableStream" in globalThis && "TransformStream" in globalThis) {
         result = {
             WritableStream: globalThis.WritableStream,
             TransformStream: globalThis.TransformStream

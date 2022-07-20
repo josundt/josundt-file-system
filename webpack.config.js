@@ -31,7 +31,8 @@ export default (env, { mode = "development" }) => {
         plugins: [
             new HtmlWebpackPlugin({
                 template: path.resolve("./src/sample/index.html"),
-                filename: "index.html"
+                filename: "index.html",
+                favicon: path.resolve("./src/sample/favicon.ico")
             }),
             new CopyPlugin({
                 patterns: [

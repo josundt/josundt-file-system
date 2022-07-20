@@ -13,8 +13,9 @@ const ponyfillUrl = "https://cdn.jsdelivr.net/npm/web-streams-polyfill@3/dist/po
 const defaultAssetUrl = `${location.protocol}//${location.host}/sample-photo.jpg`;
 
 // NB!!! Important to set your polyfill download function!
-setPonyFillDownloadCallback(() =>
-    import(/* webpackIgnore: true */ ponyfillUrl) as Promise<WebStreamsTypeLib>
+setPonyFillDownloadCallback(
+    () => import(/* webpackIgnore: true */ ponyfillUrl) as Promise<WebStreamsTypeLib>,
+    //false
 );
 
 
