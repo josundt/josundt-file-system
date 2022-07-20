@@ -38,7 +38,7 @@ function onSubmit(ev: Event): Promise<void> {
         const response = await fetch(u, {
             headers: {
                 // Set authorization headers etc
-                authorization: "Bearer token-here"
+                // authorization: "Bearer token-here"
             }
         });
         // Ensure that resposne is OK before write to disk
