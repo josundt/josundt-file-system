@@ -1,4 +1,4 @@
-import { DownloadFileHandle } from "../../file-system/downloader/file-handle.js";
+import { DownloadFileHandle } from "@josundt/file-system/downloader";
 
 export async function downloadAsync(
     url: string,

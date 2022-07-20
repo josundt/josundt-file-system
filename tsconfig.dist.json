@@ -1,0 +1,12 @@
+{
+    "extends": "@josundt/tsconfig-rules/tsconfig.base.web.nodenext.json",
+    "compilerOptions": {
+      "outDir": "./dist/esm",
+      "declaration": true,
+      "declarationDir": "./dist/types",
+      "declarationMap": true
+    },
+    "include": [
+      "./src/file-system"
+    ]
+}

@@ -8,9 +8,6 @@
 </head>
 <body>
     <h1>Download to <a href="https://fs.spec.whatwg.org/" target="_blank">FileSystem</a> demo</h1>
-    <h2>-piping Response.body to a
-        <a href="https://fs.spec.whatwg.org/#api-filesystemwritablefilestream" target="_blank">FileSystemWritableFileStream</a>
-    </h2>
     <form>
         <div class="form-group">
             <label for="url">URL</label>
@@ -21,7 +18,7 @@
                 <legend>Download strategy</legend>
                 <label class="clickable">
                     <input type="radio" name="downloadStrategy" value="download" checked="true"/>
-                    Download <span class="small">(using TransportStream to )</span>
+                    Download <span class="small">(pipe the Response.body stream through TransformStream to FileSystemWritableFileStream)</span>
                 </label>
                 <label class="clickable">
                     <input type="radio" name="downloadStrategy" value="saveAs"/>
@@ -31,6 +28,5 @@
         </div>
         <button>Download!</button>
     </form>
-    <script src="./dist/main.js"></script>
 </body>
 </html>

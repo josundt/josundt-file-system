@@ -1,3 +1,36 @@
 {
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/.git": true,
+    "**/.hg": true,
+    "**/.svn": true,
+    "**/CVS": true,
+    ".vscode": false,
+    "dist": false,
+    "node_modules": false
+  },
+  "javascript.preferences.quoteStyle": "double",
+  "jest.autoRun": {
+    "onSave": [ /*"test-file"*/
+    ],
+    "onStartup": [ /*"all-tests"*/
+    ],
+    "watch": false
+  },
+  "jest.jestCommandLine": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --coverage --runInBand --watchAll=false",
+  "search.exclude": {
+    "**/node_modules": true,
+    "dist": true,
+    "test.results": true,
+    "test.coverage": true
+  },
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.preferences.quoteStyle": "double",
+  "typescript.tsdk": ".\\node_modules\\typescript\\lib",
+  "versionlens.suggestions.showOnStartup": true
 }

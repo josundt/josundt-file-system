@@ -1,5 +1,5 @@
-import { FileSystemFileHandleExt } from "../../file-system/abstractions.js";
-import { showSaveFilePicker, ShowSaveFilePickerTypes } from "../../file-system/show-save-file-picker.js";
+import { FileSystemFileHandleExt } from "@josundt/file-system";
+import { showSaveFilePicker, ShowSaveFilePickerTypes } from "@josundt/file-system/show-save-file-picker";
 import { extensionsMimeMap } from "./extensions-mime-map.js";
 
 export async function saveAsAsync(

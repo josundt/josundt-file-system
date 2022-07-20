@@ -1,7 +1,11 @@
 {
     "extends": "@josundt/tsconfig-rules/tsconfig.base.web.nodenext.json",
     "compilerOptions": {
-      "skipLibCheck": true
+      "paths": {
+        "@josundt/file-system": ["./src/file-system/index.ts"],
+        "@josundt/file-system/downloader": ["./src/file-system/downloader/file-handle.ts"],
+        "@josundt/file-system/show-save-file-picker": ["./src/file-system/show-save-file-picker.ts"]
+      }
     },
     "include": [
       "./src"

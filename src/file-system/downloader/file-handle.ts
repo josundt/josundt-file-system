@@ -64,7 +64,7 @@ export class DownloadFileHandle
             };
             /* eslint-enable @typescript-eslint/naming-convention */
 
-            const keepAlive = setTimeout(() => sw.active?.postMessage(0), 10000);
+            const keepAlive = setTimeout(() => sw.active?.postMessage(0), 10_000);
 
             ts.readable
                 .pipeThrough(new TransformStream<Uint8Array, Uint8Array>({

@@ -1,4 +1,4 @@
-import { setPonyFillDownloadCallback, WebStreamsTypeLib } from "../file-system/lib/web-streams-ponyfill-factory.js";
+import { setPonyFillDownloadCallback, type WebStreamsTypeLib } from "@josundt/file-system";
 import { downloadAsync } from "./download/download-async.js";
 import { saveAsAsync } from "./save-as/save-as-async.js";
 

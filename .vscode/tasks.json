@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "runner": "terminal",
+  "tasks": [
+    {
+      "label": "compile:and:lint",
+      "dependsOn": ["compile:ts", "lint:ts",],
+      "dependsOrder": "parallel",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "compile",
+      "dependsOn": ["compile:ts"],
+      "dependsOrder": "parallel",
+      "presentation": {
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "compile:ts",
+      "type": "npm",
+      "script": "compile:ts",
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "lint",
+      "dependsOn": ["lint:ts"],
+      "dependsOrder": "parallel",
+      "presentation": {
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "lint:ts",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "eslint",
+        "src",
+        "--format",
+        "stylish",
+        "--ext",
+        ".ts,.tsx",
+      ],
+      "group": "build",
+      "problemMatcher": "$eslint-stylish"
+    }
+  ]
+}
