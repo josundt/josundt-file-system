@@ -15,7 +15,7 @@ const defaultAssetUrl = `${location.protocol}//${location.host}/sample-photo.jpg
 // NB!!! Important to set your polyfill download function!
 setPonyFillDownloadCallback(
     () => import(/* webpackIgnore: true */ ponyfillUrl) as Promise<WebStreamsTypeLib>,
-    //false
+    true
 );
 
 

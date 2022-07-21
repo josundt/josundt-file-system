@@ -1,6 +1,8 @@
 import ResolveTypescriptPlugin from "resolve-typescript-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import { CleanWebpackPlugin } from "clean-webpack-plugin";
+
 import path from "node:path";
 export default (env, { mode = "development" }) => {
     const config = {
@@ -29,6 +31,7 @@ export default (env, { mode = "development" }) => {
             ]
         },
         plugins: [
+            new CleanWebpackPlugin(),
             new HtmlWebpackPlugin({
                 template: path.resolve("./src/sample/index.html"),
                 filename: "index.html",

@@ -52,6 +52,7 @@
   "devDependencies": {
     "@josundt/eslint-config": "4.7.3",
     "@josundt/tsconfig-rules": "4.7.3",
+    "clean-webpack-plugin": "4.0.0",
     "copy-webpack-plugin": "11.0.0",
     "html-webpack-plugin": "5.5.0",
     "resolve-typescript-plugin": "1.2.0",
