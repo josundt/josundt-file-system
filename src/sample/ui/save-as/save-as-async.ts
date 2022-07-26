@@ -1,10 +1,11 @@
 import { FileSystemFileHandleExt } from "@josundt/file-system";
-import { showSaveFilePicker, ShowSaveFilePickerTypes } from "@josundt/file-system/show-save-file-picker";
+import { getShowSaveFilePicker, ShowSaveFilePickerTypes } from "@josundt/file-system/show-save-file-picker";
 import { extensionsMimeMap } from "./extensions-mime-map.js";
 
 export async function saveAsAsync(
     url: string,
     getResponseAsync: (url: string) => Promise<Response>,
+    preferServiceWorker: boolean,
     fileName?: string
 ): Promise<void> {
 
@@ -18,11 +19,14 @@ export async function saveAsAsync(
     let fileHandle: FileSystemFileHandleExt | undefined;
     try {
         /* eslint-disable @typescript-eslint/naming-convention */
+        const showSaveFilePicker = getShowSaveFilePicker(preferServiceWorker);
+
         fileHandle = await showSaveFilePicker({
             suggestedName: fileName,
             types: types,
             excludeAcceptAllOption: !!(mimeType) // default
         });
+
     /* eslint-disable @typescript-eslint/naming-convention */
     } catch (err) {
         // Errors may be thrown f.ex. if user closes saveAs dialog

@@ -16,13 +16,21 @@
         <div class="form-group">
             <fieldset>
                 <legend>Download strategy</legend>
+
                 <label class="clickable">
                     <input type="radio" name="downloadStrategy" value="download" checked="true"/>
-                    Download <span class="small">(pipe the Response.body stream through TransformStream to FileSystemWritableFileStream)</span>
+                    Download
                 </label>
                 <label class="clickable">
                     <input type="radio" name="downloadStrategy" value="saveAs"/>
-                    Save as <span class="small">(with fallback to "Downlad" strategy when not supported by browser)</span>
+                    showSaveFilePicker <span class="small">(with fallback to "Download" strategy when not supported by browser)</span>
+                </label>
+
+                <label class="clickable">
+                    <input type="checkbox" name="preferServiceWorker" checked="true"/>
+                    Prefer download through service worker MessageChannel<br/>
+                    <span class="small">When checked: Write Response stream to Service Worker through MessageChannel, open sw-intercepted URL in IFRAME</span><br/>
+                    <span class="small">When unchecked: Write to Blob, trigger link with ObjectURL click - loads to memory before disk</span>
                 </label>
             </fieldset>
         </div>

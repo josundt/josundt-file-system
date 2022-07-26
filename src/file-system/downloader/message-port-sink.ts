@@ -1,13 +1,7 @@
-enum MessagePortSinkEventType {
-    Write = 0,
-    Pull = 1,
-    Error = 2,
-    Abort = 3,
-    Close = 4
-}
+import { MessagePortEventType } from "./abstractions.js";
 
 interface MessagePortSinkEventData {
-    type: MessagePortSinkEventType;
+    type: MessagePortEventType;
     reason: string;
 }
 
@@ -30,11 +24,13 @@ export class MessagePortSink<W extends Uint8Array> implements UnderlyingSink<W> 
     start(controller: WritableStreamDefaultController): any {
         this._controller = controller;
         // Apply initial backpressure
-        return this._readyPromise;
+
+        return Promise.resolve(); // JOSUNDT: BUGFIX
+        //return this._readyPromise;
     }
 
     write(chunk: W, controller: WritableStreamDefaultController): void | PromiseLike<void> {
-        const message = { type: MessagePortSinkEventType.Write, chunk: chunk };
+        const message = { type: MessagePortEventType.Write, chunk: chunk };
 
         // Send chunk
         this._port.postMessage(message, [chunk.buffer]);
@@ -47,20 +43,20 @@ export class MessagePortSink<W extends Uint8Array> implements UnderlyingSink<W> 
     }
 
     close(): void {
-        this._port.postMessage({ type: MessagePortSinkEventType.Close });
+        this._port.postMessage({ type: MessagePortEventType.Close });
         this._port.close();
     }
 
     abort(reason: MessagePortSinkEventData["reason"]): void {
-        this._port.postMessage({ type: MessagePortSinkEventType.Abort, reason: reason });
+        this._port.postMessage({ type: MessagePortEventType.Abort, reason: reason });
         this._port.close();
     }
 
     private _onMessage(message: MessagePortSinkEventData): void {
-        if (message.type === MessagePortSinkEventType.Pull || message.type === MessagePortSinkEventType.Write) {
+        if (message.type === MessagePortEventType.Pull || message.type === MessagePortEventType.Write) {
             this._resolveReady();
         }
-        if (message.type === MessagePortSinkEventType.Error || message.type === MessagePortSinkEventType.Abort) {
+        if (message.type === MessagePortEventType.Error || message.type === MessagePortEventType.Abort) {
             this._onError(message.reason);
         }
     }

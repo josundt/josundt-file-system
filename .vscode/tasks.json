@@ -4,7 +4,7 @@
   "tasks": [
     {
       "label": "compile:and:lint",
-      "dependsOn": ["compile:ts", "lint:ts",],
+      "dependsOn": ["compile:fs", "compile:sample:ui", "compile:sample:sw", "lint:fs", "lint:sample:ui", "lint:sample:sw"],
       "dependsOrder": "parallel",
       "group": {
         "kind": "build",
@@ -16,34 +16,81 @@
     },
     {
       "label": "compile",
-      "dependsOn": ["compile:ts"],
+      "dependsOn": ["compile:fs", "compile:sample:ui", "compile:sample:sw"],
       "dependsOrder": "parallel",
       "presentation": {
         "panel": "dedicated"
       }
     },
     {
-      "label": "compile:ts",
+      "label": "compile:fs",
       "type": "npm",
-      "script": "compile:ts",
+      "script": "compile:fs",
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "compile:sample:ui",
+      "type": "npm",
+      "script": "compile:sample:ui",
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "compile:sample:sw",
+      "type": "npm",
+      "script": "compile:sample:sw",
       "problemMatcher": "$tsc",
       "group": "build"
     },
     {
       "label": "lint",
-      "dependsOn": ["lint:ts"],
+      "dependsOn": ["lint:fs", "lint:sample:ui", "lint:sample:sw"],
       "dependsOrder": "parallel",
       "presentation": {
         "panel": "dedicated"
       }
     },
     {
-      "label": "lint:ts",
+      "label": "lint:fs",
       "type": "shell",
       "command": "npx",
       "args": [
         "eslint",
-        "src",
+        "src/file-system",
+        "--parser-options=project:'src/file-system/tsconfig.json'",
+        "--format",
+        "stylish",
+        "--ext",
+        ".ts,.tsx",
+      ],
+      "group": "build",
+      "problemMatcher": "$eslint-stylish"
+    },
+    {
+      "label": "lint:sample:ui",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "eslint",
+        "src/sample/ui",
+        "--parser-options=project:'src/sample/ui/tsconfig.json'",
+        "--format",
+        "stylish",
+        "--ext",
+        ".ts,.tsx",
+      ],
+      "group": "build",
+      "problemMatcher": "$eslint-stylish"
+    },
+    {
+      "label": "lint:sample:sw",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "eslint",
+        "src/sample/sw",
+        "--parser-options=project:'src/sample/sw/tsconfig.json'",
         "--format",
         "stylish",
         "--ext",

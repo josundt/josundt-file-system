@@ -1,0 +1,17 @@
+{
+  "extends": "@josundt/tsconfig-rules/tsconfig.base.web.nodenext.json",
+  "compilerOptions": {
+    "outDir": "./dist/sample-esm/ui",
+    "paths": {
+      "@josundt/file-system": ["../../file-system/index.ts"],
+      "@josundt/file-system/downloader": ["../../file-system/downloader/index.ts"],
+      "@josundt/file-system/show-save-file-picker": ["../../file-system/show-save-file-picker.ts"]
+    }
+  },
+  "references": [{
+    "path": "../../file-system"
+  }],
+  "include": [
+    "**/*"
+  ]
+}

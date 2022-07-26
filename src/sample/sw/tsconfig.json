@@ -1,0 +1,17 @@
+{
+  "extends": "@josundt/tsconfig-rules/tsconfig.base.web.nodenext.json",
+  "compilerOptions": {
+    "lib": ["WebWorker", "ES2019"],
+    "outDir": "./dist/sample-esm",
+    "types": [],
+    "paths": {
+      "@josundt/file-system/downloader/sw": ["../../file-system/downloader/sw/index.ts"]
+    }
+  },
+  "references": [{
+    "path": "../../file-system"
+  }],
+  "include": [
+    "**/*.ts"
+  ]
+}

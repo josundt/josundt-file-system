@@ -22,19 +22,21 @@ export interface ShowSaveFilePickerOptions {
 
 export type ShowSaveFilePickerFn = (options?: ShowSaveFilePickerOptions) => Promise<FileSystemFileHandleExt>;
 
+export function getShowSaveFilePicker(preferServiceWorker: boolean): ShowSaveFilePickerFn {
+    // If global showSaveFilePicker is supported, use FileHandle returned from dialog
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const showSaveFilePickerFileHandle = (globalThis as any).showSaveFilePicker as ShowSaveFilePickerFn;
 
-// If global showSaveFilePicker is supported, use FileHandle returned from dialog
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-const showSaveFilePickerFileHandle = (globalThis as any).showSaveFilePicker as ShowSaveFilePickerFn;
+    // Fallback to use DownloadFileHandle
+    const downloadFileHandle: ShowSaveFilePickerFn = async function (
+        options: ShowSaveFilePickerOptions = {}
+    ): Promise<FileSystemFileHandleExt> {
 
-// Fallback to use DownloadFileHandle
-const downloadFileHandle: ShowSaveFilePickerFn = async function (
-    options: ShowSaveFilePickerOptions = {}
-): Promise<FileSystemFileHandleExt> {
+        return Promise.resolve(new DownloadFileHandle({ filename: options.suggestedName, preferServiceWorker: preferServiceWorker }));
 
-    return Promise.resolve(new DownloadFileHandle(options.suggestedName));
+    };
 
-};
+    return showSaveFilePickerFileHandle ?? downloadFileHandle;
+}
 
-export const showSaveFilePicker = showSaveFilePickerFileHandle ?? downloadFileHandle;
 

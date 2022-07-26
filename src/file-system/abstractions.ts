@@ -28,17 +28,3 @@ export interface FileSystemFileHandleExt extends FileSystemHandle {
     getFile(): Promise<File>;
     createWritable<W>(options?: FileSystemCreateWritableOptions): Promise<FileSystemWritableFileStream>;
 }
-
-export interface FileSystemQueryPermissionsArgs {
-    mode: "read" | "write" | "readwrite";
-}
-
-export type FileSystemQueryPermissionsResult = "granted" | "denied";
-
-export type FileSystemQueryPermissionsFn =
-    (options: FileSystemQueryPermissionsArgs) => Promise<FileSystemQueryPermissionsResult>;
-
-export interface FileSystemHandleRemoveArgs {
-    recursive?: boolean;
-}
-

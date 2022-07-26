@@ -10,10 +10,10 @@
       "sourceMaps": true,
       "sourceMapPathOverrides": {
         // Notice that this "namespace" matches the devtoolNamespace in webpack.config
-        "webpack:///download/./~/*": "${workspaceFolder}/node_modules/*",
-        "webpack://download?:*/*": "${workspaceFolder}/*",
-        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
-        "webpack://?:*/*": "${workspaceFolder}/*"
+        "webpack:///fs-sample/./~/*": "${workspaceFolder}/node_modules/*",
+        "webpack://fs-sample?:*/*": "${workspaceFolder}/*"
+        // "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+        // "webpack://?:*/*": "${workspaceFolder}/*"
       }
     }
   ]

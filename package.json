@@ -17,8 +17,12 @@
       "default": "./dist/esm/index.js"
     },
     "./downloader": {
-      "types": "./dist/types/downloader/file-handle.d.ts",
-      "default": "./dist/esm/downloader/file-handle.js"
+      "types": "./dist/types/downloader/index.d.ts",
+      "default": "./dist/esm/downloader/index.js"
+    },
+    "./downloader/sw": {
+      "types": "./dist/types/downloader/sw/index.d.ts",
+      "default": "./dist/esm/downloader/sw/index.js"
     },
     "./show-save-file-picker": {
       "types": "./dist/types/show-save-file-picker.d.ts",
@@ -31,12 +35,16 @@
     "./src"
   ],
   "scripts": {
-    "compile": "npm run compile:ts",
-    "compile:ts": "tsc -p ./tsconfig.json --noemit",
-    "lint": "npm run lint:ts",
-    "lint:ts": "eslint src --format visualstudio --ext .ts,.tsx",
+    "compile": "npm run compile:fs && npm run compile:sample:ui && npm run compile:sample:sw",
+    "compile:fs": "tsc -p ./src/file-system/tsconfig.json --noemit",
+    "compile:sample:ui": "tsc -p ./src/sample/ui/tsconfig.json --noemit",
+    "compile:sample:sw": "tsc -p ./src/sample/sw/tsconfig.json --noemit",
+    "lint": "npm run lint:fs && npm run lint:sample:ui && npm run lint:sample:sw",
+    "lint:fs": "eslint src/file-system --parser-options=project:'src/file-system/tsconfig.json' --format visualstudio --ext .ts,.tsx",
+    "lint:sample:ui": "eslint src/sample/ui --parser-options=project:'src/sample/ui/tsconfig.json' --format visualstudio --ext .ts,.tsx",
+    "lint:sample:sw": "eslint src/sample/sw --parser-options=project:'src/sample/sw/tsconfig.json' --format visualstudio --ext .ts,.tsx",
     "start": "webpack serve",
-    "build": "rimraf ./dist/**/* && tsc -p ./tsconfig.dist.json && webpack --mode production",
+    "build": "rimraf ./dist/**/* && tsc -p ./src/file-system/tsconfig.json && webpack --mode production",
     "test": "echo \"No test exists\"",
     "prepublish": "npm run build"
   },

@@ -1,18 +1,27 @@
 import { FileSystemCreateWritableOptions, FileSystemFileHandleExt } from "../abstractions.js";
 import { FileSystemFileHandleBase } from "../file-handle-base.js";
 import { getWebStreamsTypeLibAsync } from "../lib/web-streams-ponyfill-factory.js";
+import { MessagePortResponseMessage } from "./abstractions.js";
 import { RemoteWritableStream } from "./remote-writable-stream.js";
 
 // @ts-expect-error accessing proprietary window properties
 const isSafari = !!(/constructor/i.test(window.HTMLElement) || window.safari || window.WebKitPoint);
 
+export interface DownloadFileHandleOptions {
+    filename?: string;
+    preferServiceWorker?: boolean;
+}
+
 export class DownloadFileHandle
     extends FileSystemFileHandleBase
     implements FileSystemFileHandleExt {
 
-    constructor(name: string = "Undefined") {
-        super("file", name);
+    constructor(options: DownloadFileHandleOptions = {}) {
+        super("file", options.filename ?? "Undefined");
+        this.preferServiceWorker = !!options.preferServiceWorker;
     }
+
+    private readonly preferServiceWorker: boolean = false;
 
     getFile(): Promise<File> {
         throw new DOMException(
@@ -34,7 +43,7 @@ export class DownloadFileHandle
 
         link.download = this.name;
 
-        if (isSafari || !sw) {
+        if (!this.preferServiceWorker || isSafari || !sw) {
             let chunks: Blob[] = [];
 
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -57,14 +66,14 @@ export class DownloadFileHandle
             // Make filename RFC5987 compatible
             const fileName = encodeURIComponent(this.name).replace(/['()]/g, encodeURIComponent).replace(/\*/g, "%2A");
             /* eslint-disable @typescript-eslint/naming-convention */
-            const headers = {
-                "content-disposition": `attachment; filename*=UTF-8''${fileName}`,
-                "content-type": "application/octet-stream; charset=utf-8",
-                ...(options.size ? { "content-length": options.size } : {})
+            const headers: Record<string, string> = {
+                "content-disposition": `attachment; filename="${fileName}"`,
+                //"content-type": "application/octet-stream",
+                ...(options.size ? { "content-length": String(options.size) } : {})
             };
-            /* eslint-enable @typescript-eslint/naming-convention */
 
-            const keepAlive = setTimeout(() => sw.active?.postMessage(0), 10_000);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const keepAlive = setTimeout(() => sw.active!.postMessage(0), 1_000);
 
             ts.readable
                 .pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
@@ -83,22 +92,28 @@ export class DownloadFileHandle
                         return pump();
                     }
                 }))
-                .pipeTo(writable).finally(() => {
+                .pipeTo(writable)
+                .finally(() => {
                     clearInterval(keepAlive);
                 });
 
+            const interceptedFileName = `${sw.scope}${crypto.randomUUID()}/${fileName}`;
+
             // Transfer the stream to service worker
-            sw.active!.postMessage({
-                url: sw.scope + fileName,
+            const responseMessage: MessagePortResponseMessage = {
+                url: interceptedFileName,
                 headers: headers,
                 readablePort: readablePort
-            }, [readablePort]);
+            };
+
+            sw.active!.postMessage(responseMessage, [readablePort]);
 
             // Trigger the download with a hidden iframe
             const iframe = document.createElement("iframe");
             iframe.hidden = true;
-            iframe.src = sw.scope + fileName;
+            iframe.src = interceptedFileName;
             document.body.appendChild(iframe);
+            // window.open(sw.scope + fileName, "_blank");
         }
 
         return sink.getWriter();
