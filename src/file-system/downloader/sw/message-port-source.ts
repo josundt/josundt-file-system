@@ -1,14 +1,14 @@
-import { MessagePortChunkMessage, MessagePortEventType } from "../abstractions.js";
+import { MessagePortChunkMessageData, MessagePortEventType } from "../abstractions.js";
 
 export class MessagePortSource implements UnderlyingSource {
-
-    private controller?: ReadableStreamController<any>;
 
     constructor(
         private readonly port: MessagePort
     ) {
-        this.port.onmessage = (evt: MessageEvent<MessagePortChunkMessage>) => this.onMessage(evt.data);
+        this.port.onmessage = (evt: MessageEvent<MessagePortChunkMessageData>) => this.onMessage(evt.data);
     }
+
+    private controller?: ReadableStreamController<any>;
 
     start(controller: ReadableStreamController<any>): void {
         this.controller = controller;
@@ -21,7 +21,7 @@ export class MessagePortSource implements UnderlyingSource {
         this.port.close();
     }
 
-    onMessage(message: { type: number; chunk: Uint8Array; reason: any; }): void {
+    onMessage(message: MessagePortChunkMessageData): void {
         // enqueue() will call pull() if needed when there's no backpressure
         if (message.type === MessagePortEventType.Write) {
             this.controller!.enqueue(message.chunk);

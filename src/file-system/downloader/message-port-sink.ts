@@ -5,89 +5,96 @@ interface MessagePortSinkEventData {
     reason: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+interface AsyncOperation<T = void> {
+    promise: Promise<T>;
+    resolve: (value: T) => void;
+    reject: (error: any) => void;
+}
+
 export class MessagePortSink<W extends Uint8Array> implements UnderlyingSink<W> {
     constructor(port: MessagePort) {
 
-        port.onmessage = (event: MessageEvent<MessagePortSinkEventData>) => this._onMessage(event.data);
+        port.onmessage = (event: MessageEvent<MessagePortSinkEventData>) => this.onSwReply(event.data);
 
-        this._port = port;
-        this._resetReady();
+        this.outPort = port;
     }
 
-    private readonly _port: MessagePort;
-    private _controller?: WritableStreamDefaultController;
-    private _readyPending: boolean = false;
-    private _readyPromise?: Promise<void>;
-    private _readyResolve?: () => void;
-    private _readyReject?: (reason: MessagePortSinkEventData["reason"]) => void;
+    private readonly outPort: MessagePort;
+    private controller?: WritableStreamDefaultController;
 
-    start(controller: WritableStreamDefaultController): any {
-        this._controller = controller;
+    private writeOperation: AsyncOperation | null = null;
+
+    start(controller: WritableStreamDefaultController): Promise<any> {
+        this.controller = controller;
+
         // Apply initial backpressure
-
         return Promise.resolve(); // JOSUNDT: BUGFIX
-        //return this._readyPromise;
+
+        // return this._readyPromise;
     }
 
     write(chunk: W, controller: WritableStreamDefaultController): void | PromiseLike<void> {
         const message = { type: MessagePortEventType.Write, chunk: chunk };
 
         // Send chunk
-        this._port.postMessage(message, [chunk.buffer]);
+        this.outPort.postMessage(message, [chunk.buffer]);
 
         // Assume backpressure after every write, until sender pulls
-        this._resetReady();
-
-        // Apply backpressure
-        return this._readyPromise;
+        return this.startWriteOperation();
     }
 
     close(): void {
-        this._port.postMessage({ type: MessagePortEventType.Close });
-        this._port.close();
+        this.outPort.postMessage({ type: MessagePortEventType.Close });
+        this.outPort.close();
     }
 
     abort(reason: MessagePortSinkEventData["reason"]): void {
-        this._port.postMessage({ type: MessagePortEventType.Abort, reason: reason });
-        this._port.close();
+        this.outPort.postMessage({ type: MessagePortEventType.Abort, reason: reason });
+        this.outPort.close();
     }
 
-    private _onMessage(message: MessagePortSinkEventData): void {
+    private onSwReply(message: MessagePortSinkEventData): void {
         if (message.type === MessagePortEventType.Pull || message.type === MessagePortEventType.Write) {
-            this._resolveReady();
+            this.finalizeWriteOperation();
         }
         if (message.type === MessagePortEventType.Error || message.type === MessagePortEventType.Abort) {
-            this._onError(message.reason);
+            this.handleError(message.reason);
         }
     }
 
-    private _onError(reason: MessagePortSinkEventData["reason"]): void {
-        this._controller!.error(reason);
-        this._rejectReady(reason);
-        this._port.close();
+    private handleError(reason: MessagePortSinkEventData["reason"]): void {
+        this.controller!.error(reason);
+        this.rejectWriteOperation(reason);
+        this.outPort.close();
     }
 
-    private _resetReady(): void {
-        this._readyPromise = new Promise((resolve, reject) => {
-            this._readyResolve = resolve;
-            this._readyReject = reject;
+    private startWriteOperation(): Promise<void> {
+        let res: () => void;
+        let rej: (err: any) => void;
+        const writePromise = new Promise<void>((resolve, reject) => {
+            res = resolve;
+            rej = reject;
         });
-        this._readyPending = true;
+        this.writeOperation = {
+            promise: writePromise,
+            resolve: res!,
+            reject: rej!
+        };
+        return writePromise;
     }
 
-    private _resolveReady(): void {
-        this._readyResolve!();
-        this._readyPending = false;
+    private finalizeWriteOperation(): void {
+        this.writeOperation?.resolve();
+        this.writeOperation = null;
     }
 
-    private _rejectReady(reason: MessagePortSinkEventData["reason"]): void {
-        if (!this._readyPending) {
-            this._resetReady();
-        }
-        this._readyPromise!.catch(() => {
-            // Unhandled
-        });
-        this._readyReject!(reason);
-        this._readyPending = false;
+    private rejectWriteOperation(reason: MessagePortSinkEventData["reason"]): void {
+        // const writePromise = this.writePromise?.promise ?? this.initWritePromise();
+        // this.writePromise!.catch(() => {
+        //     // Unhandled
+        // });
+        this.writeOperation?.reject!(reason);
+        this.writeOperation = null;
     }
 }

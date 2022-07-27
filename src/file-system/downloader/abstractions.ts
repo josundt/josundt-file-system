@@ -1,18 +1,18 @@
 export enum MessagePortEventType {
-    Write = 0,
-    Pull = 1,
-    Error = 2,
-    Abort = 3,
-    Close = 4
+    Write = "write",
+    Pull = "pull",
+    Error = "error",
+    Abort = "abort",
+    Close = "close"
 }
 
-export interface MessagePortChunkMessage {
-    type: number;
+export interface MessagePortChunkMessageData {
+    type: MessagePortEventType;
     chunk: Uint8Array;
     reason: any;
 }
 
-export interface MessagePortResponseMessage {
+export interface MessagePortResponseMessageData {
     url: string;
     headers: Record<string, string>;
     readablePort: MessagePort;
