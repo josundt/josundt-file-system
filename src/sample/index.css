@@ -46,6 +46,15 @@ input[type='radio'] {
     accent-color: var(--accent-color);
     cursor: pointer;
 }
+input[type='radio']:not(:disabled) {
+    cursor: pointer;
+}
+input[type='radio']:not(:disabled)~span {
+    cursor: pointer;
+}
+input[type='radio']:disabled~span {
+    color: #999;
+}
 button {
     font-family: inherit;
     padding: .5em 1em;

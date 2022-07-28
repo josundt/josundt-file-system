@@ -1,8 +1,8 @@
 import { FileSystemCreateWritableOptions, FileSystemFileHandleExt } from "../abstractions.js";
 import { FileSystemFileHandleBase } from "../file-handle-base.js";
 import { getWebStreamsTypeLibAsync } from "../lib/web-streams-ponyfill-factory.js";
-import { MessagePortResponseMessageData } from "./abstractions.js";
-import { MessagePortWritableStream } from "./message-port-writable-stream.js";
+import { ServiceWorkerStartRequest } from "./abstractions.js";
+import { createMessagePortWritableStream } from "./message-port-writable-stream.js";
 
 // @ts-expect-error accessing proprietary window properties
 const isSafari = !!(/constructor/i.test(window.HTMLElement) || window.safari || window.WebKitPoint);
@@ -61,7 +61,7 @@ export class DownloadFileHandle
             }));
 
         } else {
-            const { writable, readablePort } = new MessagePortWritableStream(WritableStream);
+            const [writable, readablePort] = createMessagePortWritableStream(WritableStream);
 
             // Make filename RFC5987 compatible
             const fileName = encodeURIComponent(this.name).replace(/['()]/g, encodeURIComponent).replace(/\*/g, "%2A");
@@ -100,13 +100,14 @@ export class DownloadFileHandle
             const interceptedFileName = `${sw.scope}${crypto.randomUUID()}/${fileName}`;
 
             // Transfer the stream to service worker
-            const responseMessage: MessagePortResponseMessageData = {
+            const serviceWorkerStartMessage: ServiceWorkerStartRequest = {
+                instruction: "start",
                 url: interceptedFileName,
                 headers: headers,
                 readablePort: readablePort
             };
 
-            sw.active!.postMessage(responseMessage, [readablePort]);
+            sw.active!.postMessage(serviceWorkerStartMessage, [readablePort]);
 
             // Trigger the download with a hidden iframe
             const iframe = document.createElement("iframe");

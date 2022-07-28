@@ -69,12 +69,22 @@ function onSubmit(ev: Event): Promise<void> {
 
     switch (strategy) {
         case "download": return downloadAsync(url, getResponseAsync, preferServiceWorker, fileName);
-        case "saveAs": return saveAsAsync(url, getResponseAsync, preferServiceWorker, fileName);
+        case "showSaveFilePicker": return saveAsAsync(url, getResponseAsync, preferServiceWorker, fileName);
         default: throw new Error("Unknown strategy");
     }
 }
 
+function gracefullyDegrade(): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (!("showSaveFilePicker" in globalThis) || !(typeof (globalThis as any).showSaveFilePicker === "function")) {
+        const radio = document.getElementById("showSaveFilePicker")! as HTMLInputElement;
+        radio.disabled = true;
+    }
+}
+
 async function start(): Promise<void> {
+    gracefullyDegrade();
+
     await registerWorker();
 
     // NB!!! Important to set your polyfill download function!
@@ -88,17 +98,6 @@ const formElem = document.querySelector("form")! as HTMLFormElement;
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 formElem.addEventListener("submit", onSubmit);
 (formElem["url"] as HTMLInputElement).value = defaultAssetUrl;
-
-// const token = "foo_token";
-// // eslint-disable-next-line @typescript-eslint/no-misused-promises
-// navigator.serviceWorker.addEventListener("message", e => {
-//     if (typeof e.data === "object" && "kind" in e.data && (e.data as Record<string, string>)["kind"] === "tokenRequest") {
-//         const { active: sw } = (swReg ?? {});
-//         if (sw) {
-//             sw.postMessage({ token: token });
-//         }
-//     }
-// });
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 start();

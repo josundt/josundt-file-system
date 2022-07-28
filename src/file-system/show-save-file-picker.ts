@@ -24,8 +24,13 @@ export type ShowSaveFilePickerFn = (options?: ShowSaveFilePickerOptions) => Prom
 
 export function getShowSaveFilePicker(preferServiceWorker: boolean): ShowSaveFilePickerFn {
     // If global showSaveFilePicker is supported, use FileHandle returned from dialog
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const showSaveFilePickerFileHandle = (globalThis as any).showSaveFilePicker as ShowSaveFilePickerFn;
+
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+    const showSaveFilePickerFileHandle =
+        "showSaveFilePicker" in globalThis && typeof (globalThis as any).showSaveFilePicker === "function" ?
+            (globalThis as any).showSaveFilePicker as ShowSaveFilePickerFn :
+            undefined;
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
     // Fallback to use DownloadFileHandle
     const downloadFileHandle: ShowSaveFilePickerFn = async function (
