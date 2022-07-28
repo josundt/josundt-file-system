@@ -1,12 +1,5 @@
 import { ServiceWorkerAbortRequest, ServiceWorkerCloseRequest, ServiceWorkerResponseMessage, ServiceWorkerWriteRequest } from "./abstractions.js";
 
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-interface AsyncOperation<T = void> {
-    promise: Promise<T>;
-    resolve: (value: T) => void;
-    reject: (error: any) => void;
-}
-
 export function createMessagePortWritableStream<W extends Uint8Array>(
     writableStreamType: typeof WritableStream
 ): [writableStream: WritableStream<W>, readablePort: MessagePort] {
@@ -17,10 +10,17 @@ export function createMessagePortWritableStream<W extends Uint8Array>(
     ];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+interface AsyncOperation<T = void> {
+    promise: Promise<T>;
+    resolve: (value: T) => void;
+    reject: (error: any) => void;
+}
+
 class MessagePortWritableStreamSink<W extends Uint8Array> implements UnderlyingSink<W> {
     constructor(port: MessagePort) {
 
-        port.onmessage = (event: MessageEvent<ServiceWorkerResponseMessage>) => this.onServiceWorkerChunkResponse(event.data);
+        port.onmessage = (event: MessageEvent<ServiceWorkerResponseMessage>) => this.onServiceWorkerChannelResponse(event.data);
 
         this.outPort = port;
     }
@@ -35,8 +35,6 @@ class MessagePortWritableStreamSink<W extends Uint8Array> implements UnderlyingS
 
         // Apply initial backpressure
         return Promise.resolve(); // JOSUNDT: BUGFIX
-
-        // return this._readyPromise;
     }
 
     write(chunk: W, controller: WritableStreamDefaultController): void | PromiseLike<void> {
@@ -69,7 +67,7 @@ class MessagePortWritableStreamSink<W extends Uint8Array> implements UnderlyingS
         this.outPort.close();
     }
 
-    private onServiceWorkerChunkResponse(message: ServiceWorkerResponseMessage): void {
+    private onServiceWorkerChannelResponse(message: ServiceWorkerResponseMessage): void {
         if (message.instruction === "pull") {
             this.finalizeWriteOperation();
         }

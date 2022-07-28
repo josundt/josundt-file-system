@@ -9,7 +9,7 @@ import { saveAsAsync } from "./save-as/save-as-async.js";
 
 // You may need to move this to our preferred CDN for CSP policy
 const ponyfillUrl = "https://static.adra.com/web-stream-polyfills/v3.2.1/ponyfill.es2018.min.mjs"; //"https://cdn.jsdelivr.net/npm/web-streams-polyfill@3/dist/ponyfill.es2018.mjs";
-const defaultAssetUrl = `${location.protocol}//${location.host}/sample-photo.jpg`;
+const defaultAssetUrl = `${location.protocol}//${location.host}/${encodeURIComponent("sample()'#photo copy.jpg")}`;
 
 const c: Console = console;
 
@@ -39,7 +39,7 @@ function tryGetFileNameFromUrl(url: string): string | undefined {
     let result: string | undefined;
     const lastSegment = new URL(url).pathname.split("/").pop();
     if (lastSegment?.includes(".")) {
-        result = lastSegment;
+        result = decodeURIComponent(lastSegment);
     }
     return result;
 }

@@ -1,4 +1,4 @@
-import { ServiceWorkerStartRequest } from "../abstractions.js";
+import { ServiceWorkerStartMessage } from "../abstractions.js";
 import { createMessagePortReadableStream } from "./message-port-readable-stream.js";
 
 interface RequestInterceptionInfo {
@@ -31,6 +31,9 @@ export function handleDownloadMessageEvent(ev: MessageEvent): void {
             headers: data.headers ?? {}
         });
     }
+    // else if (data === "keepAlive") {
+    //     console.log("Keep alive");
+    // }
 
 }
 
@@ -46,7 +49,7 @@ export function handleDownloadFetchEvent(ev: FetchEvent): void {
     }));
 }
 
-function isStartMessage(data: any): data is ServiceWorkerStartRequest {
+function isStartMessage(data: any): data is ServiceWorkerStartMessage {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return !!(data?.instruction === "start" && data.url && data.readablePort);
+    return !!(data?.type === "downloadStart" && data.url && data.readablePort);
 }

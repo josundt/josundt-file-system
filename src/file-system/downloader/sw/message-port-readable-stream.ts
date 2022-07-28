@@ -10,13 +10,12 @@ export function createMessagePortReadableStream<R extends Uint8Array>(
     );
 }
 
-
 class MessagePortReadableStreamSource implements UnderlyingSource {
 
     constructor(
         private readonly port: MessagePort
     ) {
-        this.port.onmessage = (evt: MessageEvent<ServiceWorkerRequestMessage>) => this.onMessage(evt.data);
+        this.port.onmessage = (evt: MessageEvent<ServiceWorkerRequestMessage>) => this.onChannelMessage(evt.data);
     }
 
     private controller?: ReadableStreamController<any>;
@@ -36,7 +35,7 @@ class MessagePortReadableStreamSource implements UnderlyingSource {
         this.port.close();
     }
 
-    onMessage(request: ServiceWorkerRequestMessage): void {
+    onChannelMessage(request: ServiceWorkerRequestMessage): void {
         // enqueue() will call pull() if needed when there's no backpressure
         if (request.instruction === "write") {
             this.controller!.enqueue(request.chunk);

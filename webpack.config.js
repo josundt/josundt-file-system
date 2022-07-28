@@ -73,7 +73,8 @@ export default (env, { mode = "development" }) => {
             new CopyPlugin({
                 patterns: [
                     { from: abs("./src/sample/index.css") },
-                    { from: abs("./src/sample/sample-photo.jpg") }
+                    { from: abs("./src/sample/sample-photo.jpg") },
+                    { from: abs("./src/sample/sample()'#photo copy.jpg") }
                 ]
             })
         ],

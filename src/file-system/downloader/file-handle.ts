@@ -1,7 +1,7 @@
 import { FileSystemCreateWritableOptions, FileSystemFileHandleExt } from "../abstractions.js";
 import { FileSystemFileHandleBase } from "../file-handle-base.js";
 import { getWebStreamsTypeLibAsync } from "../lib/web-streams-ponyfill-factory.js";
-import { ServiceWorkerStartRequest } from "./abstractions.js";
+import { ServiceWorkerStartMessage } from "./abstractions.js";
 import { createMessagePortWritableStream } from "./message-port-writable-stream.js";
 
 // @ts-expect-error accessing proprietary window properties
@@ -40,9 +40,8 @@ export class DownloadFileHandle
         const ts = new TransformStream();
         const tsWritable = ts.writable;
 
-        if (!this.preferServiceWorker || isSafari || !sw) {
+        if (!this.preferServiceWorker || isSafari || !sw || !("ReadableStream" in globalThis) /* ReadableStream required in service worker */) {
             const link = document.createElement("a");
-            link.download = this.name;
 
             let chunks: Blob[] = [];
 
@@ -52,8 +51,13 @@ export class DownloadFileHandle
                     chunks.push(new Blob([chunk]));
                 },
                 close: () => {
-                    const blob = new Blob(chunks, { type: "application/octet-stream; charset=utf-8" });
+                    const blob = new Blob(
+                        chunks
+                        /*, { type: "application/octet-stream; charset=utf-8" }*/
+                    );
                     chunks = [];
+
+                    link.download = this.name;
                     link.href = URL.createObjectURL(blob);
                     link.click();
                     setTimeout(() => URL.revokeObjectURL(link.href), 10000);
@@ -63,58 +67,48 @@ export class DownloadFileHandle
         } else {
             const [writable, readablePort] = createMessagePortWritableStream(WritableStream);
 
-            // Make filename RFC5987 compatible
-            const fileName = encodeURIComponent(this.name).replace(/['()]/g, encodeURIComponent).replace(/\*/g, "%2A");
             /* eslint-disable @typescript-eslint/naming-convention */
             const headers: Record<string, string> = {
-                "content-disposition": `attachment; filename="${fileName}"`,
+                "content-disposition": `attachment; filename="${this.name}"`,
                 //"content-type": "application/octet-stream",
                 ...(options.size ? { "content-length": String(options.size) } : {})
             };
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            const keepAlive = setTimeout(() => sw.active!.postMessage(0), 1_000);
+            const keepAlive = setInterval(() => sw.active!.postMessage("keepAlive"), 1_000);
+
+            //let iframe: HTMLIFrameElement | undefined;
+            const swInterceptUrl = `${sw.scope}${crypto.randomUUID()}/${encodeURIComponent(this.name)}`;
 
             ts.readable
-                // .pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
-                //     transform: (chunk: Uint8Array, ctrl: TransformStreamDefaultController<Uint8Array>) => {
-                //         if (chunk instanceof Uint8Array) {
-                //             ctrl.enqueue(chunk);
-                //         }
-                //         const reader = new Response(chunk).body!.getReader();
-                //         const pump = async (arg?: Uint8Array): Promise<void> => {
-                //             const e = await reader.read();
-                //             if (!e.done) {
-                //                 ctrl.enqueue(e.value);
-                //                 await pump();
-                //             }
-                //         };
-                //         return pump();
-                //     }
-                // }))
                 .pipeTo(writable)
                 .finally(() => {
                     clearInterval(keepAlive);
+                    // if (iframe) {
+                    //     document.body.removeChild(iframe);
+                    // }
                 });
 
-            const interceptedFileName = `${sw.scope}${crypto.randomUUID()}/${fileName}`;
-
             // Transfer the stream to service worker
-            const serviceWorkerStartMessage: ServiceWorkerStartRequest = {
-                instruction: "start",
-                url: interceptedFileName,
+            const serviceWorkerStartMessage: ServiceWorkerStartMessage = {
+                type: "downloadStart",
+                url: swInterceptUrl,
                 headers: headers,
                 readablePort: readablePort
             };
 
             sw.active!.postMessage(serviceWorkerStartMessage, [readablePort]);
 
-            // Trigger the download with a hidden iframe
-            const iframe = document.createElement("iframe");
-            iframe.hidden = true;
-            iframe.src = interceptedFileName;
-            document.body.appendChild(iframe);
-            // window.open(sw.scope + fileName, "_blank");
+            // Use link click
+            const link = document.createElement("a");
+            link.href = swInterceptUrl;
+            link.click();
+
+            // Use iframe
+            // // Trigger the download with a hidden iframe
+            // iframe = document.createElement("iframe");
+            // iframe.hidden = true;
+            // iframe.src = interceptedUrl;
+            // document.body.appendChild(iframe);
         }
 
         return tsWritable.getWriter();
