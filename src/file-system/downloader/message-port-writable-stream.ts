@@ -1,4 +1,4 @@
-import { ServiceWorkerAbortRequest, ServiceWorkerCloseRequest, ServiceWorkerResponseMessage, ServiceWorkerWriteRequest } from "./abstractions.js";
+import { ChannelAbortRequest, ChannelCloseRequest, ChannelResponseMessage, ChannelWriteRequest } from "./abstractions.js";
 
 export function createMessagePortWritableStream<W extends Uint8Array>(
     writableStreamType: typeof WritableStream
@@ -10,104 +10,74 @@ export function createMessagePortWritableStream<W extends Uint8Array>(
     ];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-interface AsyncOperation<T = void> {
-    promise: Promise<T>;
-    resolve: (value: T) => void;
-    reject: (error: any) => void;
-}
-
 class MessagePortWritableStreamSink<W extends Uint8Array> implements UnderlyingSink<W> {
     constructor(port: MessagePort) {
-
-        port.onmessage = (event: MessageEvent<ServiceWorkerResponseMessage>) => this.onServiceWorkerChannelResponse(event.data);
-
-        this.outPort = port;
+        this.port = port;
     }
 
-    private readonly outPort: MessagePort;
-    private controller?: WritableStreamDefaultController;
-
-    private writeOperation: AsyncOperation | null = null;
+    private readonly port: MessagePort;
 
     start(controller: WritableStreamDefaultController): Promise<any> {
-        this.controller = controller;
-
-        // Apply initial backpressure
-        return Promise.resolve(); // JOSUNDT: BUGFIX
+        this.port.start();
+        return Promise.resolve();
     }
 
     write(chunk: W, controller: WritableStreamDefaultController): void | PromiseLike<void> {
-        const message: ServiceWorkerWriteRequest = {
-            instruction: "write",
-            chunk: chunk
-        };
 
-        // Send chunk
-        this.outPort.postMessage(message, [chunk.buffer]);
+        const promise = new Promise<void>((resolve, reject) => {
 
-        // Assume backpressure after every write, until sender pulls
-        return this.startWriteOperation();
+            const onServiceWorkerChannelResponse: (inMessage: MessageEvent<ChannelResponseMessage>) => void = m => {
+                if (m.data.result === "success") {
+                    resolve();
+                } else {
+                    controller!.error(m.data.reason);
+                    this.port.close();
+                    reject(new Error(m.data.reason));
+                }
+            };
+
+            // this.port.onmessage ??= onServiceWorkerChannelResponse;
+            this.port.addEventListener("message", onServiceWorkerChannelResponse, { once: true });
+
+            const outMessage: ChannelWriteRequest = {
+                instruction: "write",
+                chunk: chunk
+            };
+
+            // Send chunk
+            this.port.postMessage(outMessage, [chunk.buffer]);
+
+        });
+
+        return this.timeout(
+            10_000,
+            "Downloader: Response from service worker message channeel timed out",
+            promise
+        );
+
     }
 
     close(): void {
-        const message: ServiceWorkerCloseRequest = {
+        const message: ChannelCloseRequest = {
             instruction: "close"
         };
-        this.outPort.postMessage(message);
-        this.outPort.close();
+        this.port.postMessage(message);
+        this.port.close();
     }
 
     abort(reason: string): void {
-        const message: ServiceWorkerAbortRequest = {
+        const message: ChannelAbortRequest = {
             instruction: "abort",
             reason: reason
         };
-        this.outPort.postMessage(message);
-        this.outPort.close();
+        this.port.postMessage(message);
+        this.port.close();
     }
 
-    private onServiceWorkerChannelResponse(message: ServiceWorkerResponseMessage): void {
-        if (message.instruction === "pull") {
-            this.finalizeWriteOperation();
-        }
-        if (message.instruction === "error") {
-            this.handleError(message.reason);
-        }
-    }
-
-    private handleError(reason: string): void {
-        this.controller!.error(reason);
-        this.rejectWriteOperation(reason);
-        this.outPort.close();
-    }
-
-    private startWriteOperation(): Promise<void> {
-        let res: () => void;
-        let rej: (err: any) => void;
-        const writePromise = new Promise<void>((resolve, reject) => {
-            res = resolve;
-            rej = reject;
-        });
-        this.writeOperation = {
-            promise: writePromise,
-            resolve: res!,
-            reject: rej!
-        };
-        return writePromise;
-    }
-
-    private finalizeWriteOperation(): void {
-        this.writeOperation?.resolve();
-        this.writeOperation = null;
-    }
-
-    private rejectWriteOperation(reason: string): void {
-        // const writePromise = this.writePromise?.promise ?? this.initWritePromise();
-        // this.writePromise!.catch(() => {
-        //     // Unhandled
-        // });
-        this.writeOperation?.reject!(reason);
-        this.writeOperation = null;
+    private timeout<T>(timeoutMs: number, timeoutError: string, promise: Promise<T>): Promise<T> {
+        return Promise.race([
+            new Promise<T>((resolve, reject) => setTimeout(() => reject(new Error(timeoutError)), timeoutMs)),
+            promise
+        ]);
     }
 }

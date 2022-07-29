@@ -1,4 +1,5 @@
 import { setPonyFillDownloadCallback, type WebStreamsTypeLib } from "@josundt/file-system";
+import { DownloadFileHandle } from "../../file-system/downloader/file-handle.js";
 import { downloadAsync } from "./download/download-async.js";
 import { saveAsAsync } from "./save-as/save-as-async.js";
 
@@ -74,18 +75,24 @@ function onSubmit(ev: Event): Promise<void> {
     }
 }
 
-function gracefullyDegrade(): void {
+function gracefullyDegrade(swRegistration: ServiceWorkerRegistration | undefined): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!("showSaveFilePicker" in globalThis) || !(typeof (globalThis as any).showSaveFilePicker === "function")) {
         const radio = document.getElementById("showSaveFilePicker")! as HTMLInputElement;
         radio.disabled = true;
     }
+    if (!swRegistration || !DownloadFileHandle.supportsServiceWorkerDownload()) {
+        const checkbox = document.forms[0]["preferServiceWorker"] as HTMLInputElement;
+        checkbox.disabled = true;
+        checkbox.checked = false;
+    }
 }
 
 async function start(): Promise<void> {
-    gracefullyDegrade();
 
-    await registerWorker();
+    const registration = await registerWorker();
+
+    gracefullyDegrade(registration);
 
     // NB!!! Important to set your polyfill download function!
     setPonyFillDownloadCallback(

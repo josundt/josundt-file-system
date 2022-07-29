@@ -40,19 +40,22 @@ input[type='url'] {
     border: var(--border);
     border-radius: var(--border-radius);
 }
-input[type='radio'] {
+input[type='radio'],
+input[type='checkbox'] {
     font-family: inherit;
     font-size: inherit;
     accent-color: var(--accent-color);
+}
+input[type='radio']:not(:disabled),
+input[type='checkbox']:not(:disabled) {
     cursor: pointer;
 }
-input[type='radio']:not(:disabled) {
+input[type='radio']:not(:disabled)~span,
+input[type='checkbox']:not(:disabled)~span {
     cursor: pointer;
 }
-input[type='radio']:not(:disabled)~span {
-    cursor: pointer;
-}
-input[type='radio']:disabled~span {
+input[type='radio']:disabled~span,
+input[type='checkbox']:disabled~span {
     color: #999;
 }
 button {

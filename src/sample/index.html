@@ -23,12 +23,13 @@
                 </label>
                 <label>
                     <input type="radio" name="downloadStrategy" value="showSaveFilePicker" id="showSaveFilePicker"/>
-                    <span>showSaveFilePicker <span class="small">(fallback to "Download" strategy when not supported by browser)</span></span>
+                    <span>showSaveFilePicker</span>
+                    <span class="small">(fallback to "Download" strategy when not supported by browser)</span>
                 </label>
 
-                <label class="clickable">
+                <label>
                     <input type="checkbox" name="preferServiceWorker" checked="true"/>
-                    Prefer download through service worker using MessageChannel<br/>
+                    <span>Prefer download through service worker using MessageChannel</span><br/>
                     <span class="small">When checked: Write Response stream to Service Worker through MessageChannel, open sw-intercepted URL in IFRAME</span><br/>
                     <span class="small">When unchecked: Write to Blob, trigger link with ObjectURL click - loads to memory before disk</span>
                 </label>

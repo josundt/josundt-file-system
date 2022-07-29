@@ -1,4 +1,4 @@
-import { ServiceWorkerErrorResponse, ServiceWorkerPullResponse, ServiceWorkerRequestMessage } from "../abstractions.js";
+import { ChannelErrorResponse, ChannelRequestMessage, ChannelSuccessResponse } from "../abstractions.js";
 
 export function createMessagePortReadableStream<R extends Uint8Array>(
     readablePort: MessagePort,
@@ -15,7 +15,7 @@ class MessagePortReadableStreamSource implements UnderlyingSource {
     constructor(
         private readonly port: MessagePort
     ) {
-        this.port.onmessage = (evt: MessageEvent<ServiceWorkerRequestMessage>) => this.onChannelMessage(evt.data);
+        this.port.onmessage = (evt: MessageEvent<ChannelRequestMessage>) => this.onChannelMessage(evt.data);
     }
 
     private controller?: ReadableStreamController<any>;
@@ -27,20 +27,20 @@ class MessagePortReadableStreamSource implements UnderlyingSource {
     cancel(reason: Error): void {
         // Firefox can notify a cancel event, chrome can't
         // https://bugs.chromium.org/p/chromium/issues/detail?id=638494
-        const message: ServiceWorkerErrorResponse = {
-            instruction: "error",
+        const message: ChannelErrorResponse = {
+            result: "error",
             reason: reason.message
         };
         this.port.postMessage(message);
         this.port.close();
     }
 
-    onChannelMessage(request: ServiceWorkerRequestMessage): void {
+    onChannelMessage(request: ChannelRequestMessage): void {
         // enqueue() will call pull() if needed when there's no backpressure
         if (request.instruction === "write") {
             this.controller!.enqueue(request.chunk);
-            const response: ServiceWorkerPullResponse = {
-                instruction: "pull"
+            const response: ChannelSuccessResponse = {
+                result: "success"
             };
             this.port.postMessage(response);
         }

@@ -1,45 +1,47 @@
 
-// This message is not
-export interface ServiceWorkerStartMessage {
-    type: "downloadStart";
+export interface ServiceWorkerDownloadInitMessage {
+    type: "download-init";
     url: string;
     headers: Record<string, string>;
-    readablePort: MessagePort;
-    rs?: ReadableStream; // Property added by service worker
+    messagePort: MessagePort;
 }
 
-export type ServiceWorkerRequestInstruction = "write" | "abort" | "close";
+export type ChannelRequestInstruction = "write" | "abort" | "close";
 
-export type ServiceWorkerResponseInstruction = "pull" | "error";
-
-export interface ServiceWorkerChannelMessageBase<TInstruction> {
-    instruction: TInstruction;
+export interface ChannelRequestBase {
+    instruction: ChannelRequestInstruction;
 }
 
-export interface ServiceWorkerWriteRequest extends ServiceWorkerChannelMessageBase<ServiceWorkerRequestInstruction> {
+export interface ChannelWriteRequest extends ChannelRequestBase {
     instruction: "write";
     chunk: Uint8Array;
 }
 
-export interface ServiceWorkerAbortRequest extends ServiceWorkerChannelMessageBase<ServiceWorkerRequestInstruction> {
+export interface ChannelAbortRequest extends ChannelRequestBase {
     instruction: "abort";
     reason: string;
 }
 
-export interface ServiceWorkerCloseRequest extends ServiceWorkerChannelMessageBase<ServiceWorkerRequestInstruction> {
+export interface ChannelCloseRequest extends ChannelRequestBase {
     instruction: "close";
 }
 
-export type ServiceWorkerRequestMessage = ServiceWorkerWriteRequest | ServiceWorkerAbortRequest | ServiceWorkerCloseRequest;
+export type ChannelRequestMessage = ChannelWriteRequest | ChannelAbortRequest | ChannelCloseRequest;
 
 
-export interface ServiceWorkerPullResponse extends ServiceWorkerChannelMessageBase<ServiceWorkerResponseInstruction> {
-    instruction: "pull";
+export type ChannelResponseResult = "success" | "error";
+
+export interface ChannelResponseBase {
+    result: ChannelResponseResult;
 }
 
-export interface ServiceWorkerErrorResponse extends ServiceWorkerChannelMessageBase<ServiceWorkerResponseInstruction> {
-    instruction: "error";
+export interface ChannelSuccessResponse extends ChannelResponseBase {
+    result: "success";
+}
+
+export interface ChannelErrorResponse extends ChannelResponseBase {
+    result: "error";
     reason: string;
 }
 
-export type ServiceWorkerResponseMessage = ServiceWorkerPullResponse  | ServiceWorkerErrorResponse;
+export type ChannelResponseMessage = ChannelSuccessResponse  | ChannelErrorResponse;
