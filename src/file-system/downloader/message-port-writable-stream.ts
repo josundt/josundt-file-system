@@ -50,7 +50,7 @@ class MessagePortWritableStreamSink<W extends Uint8Array> implements UnderlyingS
         });
 
         return this.timeout(
-            10_000,
+            3_000,
             "Downloader: Response from service worker message channeel timed out",
             promise
         );
@@ -74,10 +74,27 @@ class MessagePortWritableStreamSink<W extends Uint8Array> implements UnderlyingS
         this.port.close();
     }
 
-    private timeout<T>(timeoutMs: number, timeoutError: string, promise: Promise<T>): Promise<T> {
-        return Promise.race([
-            new Promise<T>((resolve, reject) => setTimeout(() => reject(new Error(timeoutError)), timeoutMs)),
+    private async timeout<T>(timeoutMs: number, timeoutError: string, promise: Promise<T>): Promise<T> {
+        let timeoutTimer: number | null = null;
+        let timeoutCancel: (() => void) | undefined;
+
+        const timeoutPromise = new Promise<T>((resolve, reject) => {
+            timeoutTimer = setTimeout(() => reject(new Error(timeoutError)), timeoutMs) as unknown as number;
+            timeoutCancel = resolve as (() => void);
+        });
+
+        const result = await Promise.race([
+            timeoutPromise,
             promise
         ]);
+
+        if (timeoutTimer !== null) {
+            clearTimeout(timeoutTimer);
+        }
+        if (timeoutCancel) {
+            timeoutCancel();
+        }
+
+        return result;
     }
 }

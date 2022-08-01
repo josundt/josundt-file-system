@@ -1,7 +1,5 @@
 export interface FileSystemCreateWritableOptions {
     keepExistingData?: boolean;
-    /* Not in spec */
-    size?: number;
 }
 
 export interface SeekWriteArgument {

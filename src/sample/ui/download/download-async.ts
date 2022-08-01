@@ -6,11 +6,13 @@ export async function downloadAsync(
     preferServiceWorker: boolean,
     filename?: string,
 ): Promise<void> {
-    const fileHandle = new DownloadFileHandle({
-        preferServiceWorker: preferServiceWorker,
-        filename: filename
-    });
     const response = await getResponseAsync(url);
+    const fileHandle = new DownloadFileHandle({
+        filename: filename,
+        preferServiceWorker: preferServiceWorker,
+        contentType: response.headers.get("content-type"),
+        contentLength: response.headers.get("content-length"),
+    });
     const writableStream = await fileHandle.createWritable();
     await response.body!.pipeTo(writableStream);
 }

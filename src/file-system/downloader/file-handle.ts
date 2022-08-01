@@ -7,6 +7,8 @@ import { createMessagePortWritableStream } from "./message-port-writable-stream.
 export interface DownloadFileHandleOptions {
     filename?: string;
     preferServiceWorker?: boolean;
+    contentType?: string | null;
+    contentLength?: number | string | null;
 }
 
 export class DownloadFileHandle
@@ -15,10 +17,10 @@ export class DownloadFileHandle
 
     constructor(options: DownloadFileHandleOptions = {}) {
         super("file", options.filename ?? "Undefined");
-        this.preferServiceWorker = !!options.preferServiceWorker;
+        this.options = options;
     }
 
-    private readonly preferServiceWorker: boolean = false;
+    private readonly options: DownloadFileHandleOptions;
 
     getFile(): Promise<File> {
         throw new DOMException(
@@ -37,7 +39,7 @@ export class DownloadFileHandle
         const ts = new TransformStream();
         const tsWritable = ts.writable;
 
-        if (!this.preferServiceWorker || !sw || !DownloadFileHandle.supportsServiceWorkerDownload()) {
+        if (!this.options.preferServiceWorker || !sw || !DownloadFileHandle.supportsServiceWorkerDownload()) {
             const link = document.createElement("a");
 
             let chunks: Blob[] = [];
@@ -49,8 +51,11 @@ export class DownloadFileHandle
                 },
                 close: () => {
                     const blob = new Blob(
-                        chunks
-                        /*, { type: "application/octet-stream; charset=utf-8" }*/
+                        chunks,
+                        {
+                            ...(typeof this.options.contentType === "string" ? { type: this.options.contentType } : {})
+                            // type: "application/octet-stream; charset=utf-8"
+                        }
                     );
                     chunks = [];
 
@@ -64,12 +69,15 @@ export class DownloadFileHandle
         } else {
             const [writable, swMessagePort] = createMessagePortWritableStream(WritableStream);
 
+            const contentLength = typeof this.options.contentLength === "string" ? parseInt(this.options.contentLength, 10) : null;
+
             /* eslint-disable @typescript-eslint/naming-convention */
             const headers: Record<string, string> = {
+                ...(typeof this.options.contentType === "string" ? { "content-type": this.options.contentType } : {}),
+                ...(typeof contentLength === "number" && !isNaN(contentLength) ? { "content-length": String(contentLength) } : {}), //"application/octet-stream"
                 "content-disposition": `attachment; filename="${this.name}"`,
-                //"content-type": "application/octet-stream",
-                ...(options.size ? { "content-length": String(options.size) } : {})
             };
+            /* eslint-enable @typescript-eslint/naming-convention */
 
             const keepAlive = setInterval(() => sw.active!.postMessage("keepAlive"), 10_000);
 
@@ -112,10 +120,11 @@ export class DownloadFileHandle
     }
 
     static supportsServiceWorkerDownload(): boolean {
-        // @ts-expect-error accessing proprietary window properties
-        const isSafari = !!(/constructor/i.test(window.HTMLElement) || window.safari || window.WebKitPoint);
-        /* ReadableStream required in service worker */
-        return !isSafari && ("ReadableStream" in globalThis);
+        // // @ts-expect-error accessing proprietary window properties
+        //const isSafari = !!(/constructor/i.test(window.HTMLElement) || window.safari || window.WebKitPoint);
+
+        /* ReadableStream/MessageChannel required for service worker */
+        return /*!isSafari &&*/ ("ReadableStream" in globalThis) && ("MessageChannel" in globalThis);
 
     }
 }
