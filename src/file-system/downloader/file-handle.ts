@@ -120,11 +120,11 @@ export class DownloadFileHandle
     }
 
     static supportsServiceWorkerDownload(): boolean {
-        // // @ts-expect-error accessing proprietary window properties
-        //const isSafari = !!(/constructor/i.test(window.HTMLElement) || window.safari || window.WebKitPoint);
+        // @ts-expect-error accessing proprietary window properties
+        const isSafari = !!(/constructor/i.test(window.HTMLElement) || window.safari || window.WebKitPoint);
 
-        /* ReadableStream/MessageChannel required for service worker */
-        return /*!isSafari &&*/ ("ReadableStream" in globalThis) && ("MessageChannel" in globalThis);
+        /* ReadableStream / MessageChannel required for service worker */
+        return !isSafari && ("ReadableStream" in globalThis) && ("MessageChannel" in globalThis);
 
     }
 }
