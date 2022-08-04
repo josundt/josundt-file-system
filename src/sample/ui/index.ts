@@ -1,5 +1,5 @@
 import { setPonyFillDownloadCallback, type WebStreamsTypeLib } from "@josundt/file-system";
-import { DownloadFileHandle } from "../../file-system/downloader/file-handle.js";
+import { DownloadFileHandle } from "@josundt/file-system/downloader";
 import { downloadAsync } from "./download/download-async.js";
 import { saveAsAsync } from "./save-as/save-as-async.js";
 

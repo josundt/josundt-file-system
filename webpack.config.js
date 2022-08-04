@@ -67,6 +67,7 @@ export default (env, { mode = "development" }) => {
         plugins: [
             new HtmlWebpackPlugin({
                 template: abs("./src/sample/index.html"),
+                chunks: ["index"],
                 filename: "index.html",
                 favicon: abs("./src/sample/favicon.ico")
             }),
