@@ -30,24 +30,24 @@ await copySampleFileAsync("sample-photo.jpg");
 await copySampleFileAsync("sample()'#photo copy.jpg");
 
 const minify = false;
+const indent = 4;
+const lfIndent = minify ? "" : `\n${" ".repeat(indent)}`;
 
 // Insert import map (PS! only supported by chromium browsers yet (aug 2022))
 const importmap = {
     imports: {
         "@josundt/file-system/downloader/sw": "/file-system/downloader/sw/index.js",
         "@josundt/file-system/downloader": "/file-system/downloader/index.js",
-        "@josundt/file-system/show-save-file-picker": "/file-system/show-save-file-picker.js",
+        "@josundt/file-system/show-save-file-picker": "/file-system/show-save-file-picker/index.js",
         "@josundt/file-system": "/file-system/index.js"
     }
 };
 
 const headLines = [
     `<link rel="shortcut icon" href="./favicon.ico"/>`,
-    `<script type="importmap">${JSON.stringify(importmap, null, minify ? 0 : 2)}</script>`,
+    `<script type="importmap">${lfIndent}${JSON.stringify(importmap, null, minify ? 0 : indent).replace(/\r?\n/g, lfIndent)}${lfIndent}</script>`,
     `<script type="module" src="./index.js" defer></script>`
 ];
-
-const lfIndent = minify ? "" : "\n    ";
 
 await transformSampleFileAsync("index.html", sampleSrc, html =>
     html.replace(/\s*\<\s*\/\s*head\s*>/i, s => `${lfIndent}${headLines.join(lfIndent)}${s}`)

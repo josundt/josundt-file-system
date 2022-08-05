@@ -21,7 +21,7 @@ async function registerWorker(): Promise<ServiceWorkerRegistration | undefined> 
     if ("serviceWorker" in navigator) {
         try {
             registration = await navigator.serviceWorker.register("/service-worker.js", {
-                scope: "./",
+                scope: "/",
                 type: "module",
                 updateViaCache: "imports",
             });

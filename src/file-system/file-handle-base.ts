@@ -2,7 +2,6 @@ import { FileSystemCreateWritableOptions, FileSystemFileHandleExt, FileSystemWri
 import { FileSystemHandleBase } from "./handle-base.js";
 import { FileSystemWritableFileStreamWrapper } from "./lib/writable-file-stream-wrapper.js";
 
-
 export abstract class FileSystemFileHandleBase
     extends FileSystemHandleBase<"file">
     implements FileSystemFileHandleExt {

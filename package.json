@@ -25,8 +25,8 @@
       "default": "./dist/esm/downloader/sw/index.js"
     },
     "./show-save-file-picker": {
-      "types": "./dist/types/show-save-file-picker.d.ts",
-      "default": "./dist/esm/show-save-file-picker.js"
+      "types": "./dist/types/show-save-file-picker/index.d.ts",
+      "default": "./dist/esm/show-save-file-picker/index.js"
     }
   },
   "main": "index.js",

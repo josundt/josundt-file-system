@@ -1,5 +1,5 @@
-import { FileSystemFileHandleExt } from "./abstractions.js";
-import { DownloadFileHandle } from "./downloader/file-handle.js";
+import { FileSystemFileHandleExt } from "../abstractions.js";
+import { DownloadFileHandle } from "../downloader/file-handle.js";
 
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export interface ContentTypeExtensionsMap {
@@ -22,7 +22,7 @@ export interface ShowSaveFilePickerOptions {
 
 export type ShowSaveFilePickerFn = (options?: ShowSaveFilePickerOptions) => Promise<FileSystemFileHandleExt>;
 
-export function getShowSaveFilePicker(preferServiceWorker: boolean): ShowSaveFilePickerFn {
+export function getShowSaveFilePicker(preferServiceWorkerFallback: boolean): ShowSaveFilePickerFn {
     // If global showSaveFilePicker is supported, use FileHandle returned from dialog
 
     /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -37,7 +37,7 @@ export function getShowSaveFilePicker(preferServiceWorker: boolean): ShowSaveFil
         options: ShowSaveFilePickerOptions = {}
     ): Promise<FileSystemFileHandleExt> {
 
-        return Promise.resolve(new DownloadFileHandle({ filename: options.suggestedName, preferServiceWorker: preferServiceWorker }));
+        return Promise.resolve(new DownloadFileHandle({ filename: options.suggestedName, preferServiceWorker: preferServiceWorkerFallback }));
 
     };
 

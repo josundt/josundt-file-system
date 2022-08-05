@@ -28,7 +28,7 @@ export default (env, { mode = "development" }) => {
             alias: {
                 "@josundt/file-system/downloader/sw": abs("./src/file-system/downloader/sw/index.ts"),
                 "@josundt/file-system/downloader": abs("./src/file-system/downloader/index.ts"),
-                "@josundt/file-system/show-save-file-picker": abs("./src/file-system/show-save-file-picker.ts"),
+                "@josundt/file-system/show-save-file-picker": abs("./src/file-system/show-save-file-picker/index.ts"),
                 "@josundt/file-system": abs("./src/file-system/index.ts")
             }
         },
@@ -80,8 +80,8 @@ export default (env, { mode = "development" }) => {
             })
         ],
         devServer: {
-            hot: false,
-            liveReload: false
+            // hot: false,
+            // liveReload: false
         }
     };
 
