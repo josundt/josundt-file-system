@@ -1,6 +1,6 @@
 import { FileSystemCreateWritableOptions, FileSystemFileHandleExt, FileSystemWritableFileStream } from "./abstractions.js";
 import { FileSystemHandleBase } from "./handle-base.js";
-import { FileSystemWritableFileStreamWrapper } from "./lib/writable-file-stream-wrapper.js";
+import { getFileSystemWritableFileStreamWrapperTypeAsync } from "./lib/writable-file-stream-wrapper.js";
 
 export abstract class FileSystemFileHandleBase
     extends FileSystemHandleBase<"file">
@@ -12,6 +12,9 @@ export abstract class FileSystemFileHandleBase
 
     async createWritable<W>(options?: FileSystemCreateWritableOptions): Promise<FileSystemWritableFileStream> {
         options ??= {};
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const FileSystemWritableFileStreamWrapper = await getFileSystemWritableFileStreamWrapperTypeAsync();
 
         return new FileSystemWritableFileStreamWrapper(
             (await this.createWritableInternal(options))

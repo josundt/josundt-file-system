@@ -1,12 +1,7 @@
-import { setPonyFillDownloadCallback, type WebStreamsTypeLib } from "@josundt/file-system";
+import { setPonyFillDownloadCallback, type StreamsApiDependencies } from "@josundt/file-system";
 import { DownloadFileHandle } from "@josundt/file-system/downloader";
 import { downloadAsync } from "./download/download-async.js";
 import { saveAsAsync } from "./save-as/save-as-async.js";
-
-// Required polyfills:
-// https://cdn.jsdelivr.net/npm/web-streams-polyfill@3/dist/ponyfill.es2018.mjs:
-//    - TransformStream (required for downloader/file-handle.js)
-//    - WritableStream (required for writable-file-stream-wrapper.js & download/file-handle.js)
 
 // You may need to move this to our preferred CDN for CSP policy
 const ponyfillUrl = "https://static.adra.com/web-stream-polyfills/v3.2.1/ponyfill.es2018.min.mjs"; //"https://cdn.jsdelivr.net/npm/web-streams-polyfill@3/dist/ponyfill.es2018.mjs";
@@ -96,7 +91,7 @@ async function start(): Promise<void> {
 
     // NB!!! Important to set your polyfill download function!
     setPonyFillDownloadCallback(
-        () => import(/* webpackIgnore: true */ ponyfillUrl) as Promise<WebStreamsTypeLib>,
+        () => import(/* webpackIgnore: true */ ponyfillUrl) as Promise<StreamsApiDependencies>,
         //true
     );
 }

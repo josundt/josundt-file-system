@@ -1,14 +1,22 @@
 import { FileSystemCreateWritableOptions, FileSystemFileHandleExt } from "../abstractions.js";
 import { FileSystemFileHandleBase } from "../file-handle-base.js";
-import { getWebStreamsTypeLibAsync } from "../lib/web-streams-ponyfill-factory.js";
+import { getStreamsApiDepsAsync } from "../lib/web-streams-ponyfill-factory.js";
 import { ServiceWorkerDownloadInitMessage } from "./abstractions.js";
 import { createMessagePortWritableStream } from "./message-port-writable-stream.js";
 
+// Requires TransformStream, uses ponyfill-factory
+
 export interface DownloadFileHandleOptions {
+    /** The file name */
     filename?: string;
+    /** When true, and sw exists and browser features allow it, chooses MessageChannel to  ServiceWorker for true streaming */
     preferServiceWorker?: boolean;
+    /** The content (mime) type */
     contentType?: string | null;
+    /** The content byte length */
     contentLength?: number | string | null;
+    /** Not recommended. When true, uses iframe instead of link click to trigger download. */
+    useIframe?: boolean;
 }
 
 export class DownloadFileHandle
@@ -33,7 +41,7 @@ export class DownloadFileHandle
         options ??= {};
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { TransformStream, WritableStream } = await getWebStreamsTypeLibAsync();
+        const { TransformStream, WritableStream } = await getStreamsApiDepsAsync();
 
         const sw = await navigator.serviceWorker?.getRegistration();
         const ts = new TransformStream();
@@ -81,16 +89,16 @@ export class DownloadFileHandle
 
             const keepAlive = setInterval(() => sw.active!.postMessage("keepAlive"), 10_000);
 
-            //let iframe: HTMLIFrameElement | undefined;
+            let iframe: HTMLIFrameElement | undefined;
             const swInterceptUrl = `${sw.scope}${crypto.randomUUID()}/${encodeURIComponent(this.name)}`;
 
             ts.readable
                 .pipeTo(writable)
                 .finally(() => {
                     clearInterval(keepAlive);
-                    // if (iframe) {
-                    //     document.body.removeChild(iframe);
-                    // }
+                    if (iframe) {
+                        document.body.removeChild(iframe);
+                    }
                 });
 
             // Transfer the stream to service worker
@@ -103,17 +111,18 @@ export class DownloadFileHandle
 
             sw.active!.postMessage(serviceWorkerStartMessage, [swMessagePort]);
 
-            // Use link click
-            const link = document.createElement("a");
-            link.href = swInterceptUrl;
-            link.click();
-
-            // Use iframe
-            // // Trigger the download with a hidden iframe
-            // iframe = document.createElement("iframe");
-            // iframe.hidden = true;
-            // iframe.src = interceptedUrl;
-            // document.body.appendChild(iframe);
+            if (this.options.useIframe) {
+                // Trigger the download with a hidden iframe
+                iframe = document.createElement("iframe");
+                iframe.hidden = true;
+                iframe.src = swInterceptUrl;
+                document.body.appendChild(iframe);
+            } else {
+                // Trigger the download simulating a link click
+                const link = document.createElement("a");
+                link.href = swInterceptUrl;
+                link.click();
+            }
         }
 
         return tsWritable.getWriter();

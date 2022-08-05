@@ -1,40 +1,57 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-export interface WebStreamsTypeLib {
+export interface StreamsApi {
+    ByteLengthQueuingStrategy: typeof ByteLengthQueuingStrategy;
+    CountQueuingStrategy: typeof CountQueuingStrategy;
+    ReadableByteStreamController: any; // typeof ReadableByteStreamController;
+    ReadableStream: typeof ReadableStream;
+    ReadableStreamBYOBReader: any; //typeof ReadableStreamBYOBReader;
+    ReadableStreamBYOBRequest: any; //typeof ReadableStreamBYOBRequest;
+    ReadableStreamDefaultController: typeof ReadableStreamDefaultController;
+    ReadableStreamDefaultReader: typeof ReadableStreamDefaultReader;
+    TransformStream: typeof TransformStream;
+    TransformStreamDefaultController: typeof TransformStreamDefaultController;
+    WritableStream: typeof WritableStream;
+    WritableStreamDefaultController: typeof WritableStreamDefaultController;
+}
+
+export interface StreamsApiDependencies extends Partial<StreamsApi> {
+    ReadableStream: typeof ReadableStream;
     TransformStream: typeof TransformStream;
     WritableStream: typeof WritableStream;
 }
 
+let imported: StreamsApiDependencies | undefined;
 
-let imported: WebStreamsTypeLib | undefined;
-
-let getPonyFillsAsync: (() => Promise<WebStreamsTypeLib>) | undefined;
+let getStreamsApiPonyFillsAsync: (() => Promise<StreamsApiDependencies>) | undefined;
 let forcePonyFill: boolean = false;
 
-export function setPonyFillDownloadCallback(fn: () => Promise<WebStreamsTypeLib>, preferPonyFill: boolean = false): void {
-    getPonyFillsAsync = fn;
+export function setPonyFillDownloadCallback(fn: () => Promise<StreamsApiDependencies>, preferPonyFill: boolean = false): void {
+    getStreamsApiPonyFillsAsync = fn;
     forcePonyFill = preferPonyFill;
 }
 
-export async function getWebStreamsTypeLibAsync(): Promise<WebStreamsTypeLib> {
+export async function getStreamsApiDepsAsync(): Promise<StreamsApiDependencies> {
 
-    let result: WebStreamsTypeLib;
+    let result: StreamsApiDependencies;
 
-    if (!forcePonyFill && "WritableStream" in globalThis && "TransformStream" in globalThis) {
+    if (!forcePonyFill && "ReadableStream" in globalThis && "TransformStream" in globalThis && "WritableStream" in globalThis) {
         result = {
-            WritableStream: globalThis.WritableStream,
-            TransformStream: globalThis.TransformStream
+            ReadableStream: globalThis.ReadableStream,
+            TransformStream: globalThis.TransformStream,
+            WritableStream: globalThis.WritableStream
         };
     } else {
-        if (!getPonyFillsAsync) {
+        if (!getStreamsApiPonyFillsAsync) {
             throw new Error("Callback to download ponyfills has not been set! Please set it using the 'setPonyFillDownloadCallback' function");
         }
         if (!imported) {
-            imported = await getPonyFillsAsync();
+            imported = await getStreamsApiPonyFillsAsync();
         }
         result = {
-            WritableStream: /*globalThis.WritableStream ??*/ imported.WritableStream,
-            TransformStream: /*globalThis.TransformStream ??*/ imported.TransformStream
+            ReadableStream: imported.ReadableStream,
+            TransformStream: imported.TransformStream,
+            WritableStream: imported.WritableStream
         };
     }
 

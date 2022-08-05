@@ -80,8 +80,8 @@ export default (env, { mode = "development" }) => {
             })
         ],
         devServer: {
-            // hot: false,
-            // liveReload: false
+            hot: true,
+            liveReload: true
         }
     };
 

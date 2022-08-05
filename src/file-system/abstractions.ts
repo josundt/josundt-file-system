@@ -14,6 +14,7 @@ export interface TruncateWriteArgument {
 
 export type ExtendedWriteType<W> = W | SeekWriteArgument | TruncateWriteArgument;
 
+
 export interface FileSystemWritableFileStream<W = any> extends WritableStream<ExtendedWriteType<W>> {
     close(): Promise<void>;
     seek(position: number): Promise<void>;
